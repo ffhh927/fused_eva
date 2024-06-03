@@ -8,7 +8,7 @@ The Eva code was originally forked from Lin Zhang's [kfac-pytorch](https://githu
 
 PyTorch and Horovod are required to use K-FAC.
 
-This code is validated to run with PyTorch-1.10.0, Horovod-0.21.0, CUDA-10.2, cuDNN-7.6, NCCL-2.6.4, and cutlass-3.5.0
+This code is validated to run with PyTorch-1.10.0, Horovod-0.21.0, CUDA-10.2, cuDNN-7.6, and NCCL-2.6.4
 
 ### Installation
 
@@ -17,6 +17,8 @@ $ git clone https://github.com/ffhh927/fused_eva.git
 $ cd fused_eva
 $ pip install -r requirements.txt
 $ HOROVOD_GPU_OPERATIONS=NCCL pip install horovod
+$ cd csrc
+$ python setup.py install
 ```
 
 If pip installation failed, please try to upgrade pip via `pip install --upgrade pip`. If Horovod installation with NCCL failed, please check the installation [guide](https://horovod.readthedocs.io/en/stable/install_include.html). 

@@ -1,7 +1,6 @@
 import math
 import torch
 import cutlass
-import time
 
 import torch.optim as optim
 import numpy as np
@@ -11,8 +10,8 @@ backend.init("Horovod")
 from kfac.utils import get_vector_a, get_vector_g
 import logging
 logger = logging.getLogger()
-from fused.multi_tensor_apply import multi_tensor_applier
-#import amp_C
+
+
 import grouped_gemm
 class Fused_KFAC(optim.Optimizer):
     """Accelerate Distributed K-FAC with Sublinear Memory Cost
@@ -65,20 +64,8 @@ class Fused_KFAC(optim.Optimizer):
         
         # scheduling results
         self.module_ranks = None
-
         self.steps = 0
 
-       # if multi_tensor_applier.available:
-      #      import amp_C
-            # Skip buffer
-       #     self._dummy_overflow_buf = torch.tensor([0], dtype=torch.int, device='cuda')
-       #     self.multi_tensor_eva = amp_C.multi_tensor_eva
-            #self.multi_group = amp_C.multi_group
-        #else:
-        #    raise RuntimeError('apex.optimizers.FusedEva requires cuda extensions')
-        #####cutlass
-        
-        
 
     ### Register hooks
     def set_hook_enabled(self, mode=True):
@@ -96,8 +83,8 @@ class Fused_KFAC(optim.Optimizer):
                     self.m_a[module].mul_(1-self.factor_decay).add_(new, alpha=self.factor_decay)
                     #xi =  math.pow(self.steps+1, -self.factor_decay)
                     #self.m_a[module].mul_(1-xi).add_(new, alpha=xi)
-            # if backend.comm.size() > 1:
-            #     self.handles.append(backend.comm.allreduce_async_(self.m_a[module], op=backend.comm.Average))
+            if backend.comm.size() > 1:
+                self.handles.append(backend.comm.allreduce_async_(self.m_a[module], op=backend.comm.Average))
 
     def _backward_hook_event(self, module, grad_input, grad_output):
         """Default: hook for saving gradient w.r.t output (g)"""
@@ -111,8 +98,8 @@ class Fused_KFAC(optim.Optimizer):
                     self.m_g[module].mul_(1-self.factor_decay).add_(new, alpha=self.factor_decay)
                     #xi =  math.pow(self.steps+1, -self.factor_decay)
                     #self.m_g[module].mul_(1-xi).add_(new, alpha=xi)
-            # if backend.comm.size() > 1:
-            #     self.handles.append(backend.comm.allreduce_async_(self.m_g[module], op=backend.comm.Average))
+            if backend.comm.size() > 1:
+                self.handles.append(backend.comm.allreduce_async_(self.m_g[module], op=backend.comm.Average))
 
     def _register_module_hooks(self, model):
         """Register forard/backward hooks to supported modules"""
@@ -130,10 +117,10 @@ class Fused_KFAC(optim.Optimizer):
                 module_name = 'module_name_%s_%d' % (classname, name_idx)
                 self.module_names.append(module_name)
                 name_idx += 1
-#         if backend.comm.rank() == 0:
-# #         if backend._HorovodBackend().rank() == 0:
+        if backend.comm.rank() == 0:
+#         if backend._HorovodBackend().rank() == 0:
             
-#             logger.info("#register modules: %s", len(self.modules))
+            logger.info("#register modules: %s", len(self.modules))
 
 	### Precondition gradients
     def _precondition_grads(self):
@@ -252,10 +239,10 @@ class Fused_KFAC(optim.Optimizer):
         self.fac_update_freq = group['fac_update_freq']
         self.kfac_update_freq = group['kfac_update_freq']
 
-        # if self.steps % self.fac_update_freq == 0 and backend.comm.size() > 1:
-        #     for handle in self.handles:
-        #         backend.comm.synchronize(handle)
-        #     self.handles = []
+        if self.steps % self.fac_update_freq == 0 and backend.comm.size() > 1:
+            for handle in self.handles:
+                backend.comm.synchronize(handle)
+            self.handles = []
         
         self._precondition_grads()
 

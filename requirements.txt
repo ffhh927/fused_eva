@@ -11,6 +11,4 @@ transformers==4.15.0
 
 # others
 wandb==0.12.11
-
-# cutlass python
-nvidia-cutlass==3.5.0
+nvidia-cutlass==3.5
