@@ -46,15 +46,15 @@ for i, (data, target) in enumerate(train_loader):
 
 ## Comparison of results
 
-The model is resnet18，and the training set is CIFAR100. Trained for 5 epochs.
+The model is resnet18，and the training set is CIFAR100. Trained for 10000 iterations.
 
-(Unit seconds, average time spent, EVA / FusedEVA)
+(Unit milliseconds / iteration, EVA / FusedEVA)
 
 | batch | forward         | backward          | optimize        | Optimize acceleration |
 | ----- | --------------- | ----------------- | --------------- | --------------------- |
 | 1     | 6.4200 / 6.3383 | 5.0072 / 4.8228   | 7.1700 / 5.4904 | 1.3054                |
-| 2     |                 |                   |                 |                       |
-| 4     |                 |                   |                 |                       |
+| 2     | 6.5336 / 6.4038 | 5.6027 / 5.5961   | 7.1241 / 5.4604 | 1.3046                |
+| 4     | 6.6091 / 6.5987 | 6.2409 / 6.2240   | 7.0037 / 5.4004 | 1.2968                |
 | 8     | 6.6967 / 6.6218 | 5.8719 / 5.8318   | 6.8439 / 5.2842 | 1.2952                |
 | 16    | 6.1667 / 6.7273 | 6.4003 / 6.3780   | 6.6541 / 5.3138 | 1.2522                |
 | 32    | 6.9099 / 6.8073 | 7.2159 / 7.0960   | 6.6377 / 5.3203 | 1.2476                |
